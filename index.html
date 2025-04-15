@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Quiniela Futbolera</title>
+  <link rel="stylesheet" href="estilos.css">
+</head>
+<body>
+  <header>
+    <h1>🔥 Quiniela Futbolera</h1>
+    <p>Inicio: <span id="inicio-quiniela">--</span> | Cierre: <span id="cierre-quiniela">--</span></p>
+  </header>
+
+  <section class="tabla-quiniela">
+    <div class="encabezados">
+      <div class="titulo">Local</div>
+      <div class="titulo">Empate</div>
+      <div class="titulo">Visitante</div>
+    </div>
+    <div id="partidos-container">
+      <p>Cargando partidos...</p>
+    </div>
+  </section>
+
+  <section class="resumen">
+    <h2>Selecciones:</h2>
+    <div id="resumen-seleccion"></div>
+  </section>
+
+  <section class="premio-info">
+    <h2>💰 Premio anterior: $5,000 MXN</h2>
+    <h3>🎟️ Costo por participación: $20 MXN</h3>
+  </section>
+
+  <section class="datos-participante">
+    <input type="text" placeholder="Nombre del participante" id="nombre">
+    <input type="tel" placeholder="Número celular" id="celular">
+  </section>
+
+  <section class="botones">
+    <button id="btn-suertudo">🎲 Me siento suertudo</button>
+    <button id="btn-dobles">2 Activa 3</button>
+    <button id="btn-agregar">Agregar Quiniela</button>
+    <button id="btn-eliminar">Eliminar Quiniela</button>
+    <button id="btn-enviar">Enviar Quiniela</button>
+    <button id="btn-verificar">Verificador</button>
+  </section>
+
+  <script src="script.js"></script>
+</body>
+</html>

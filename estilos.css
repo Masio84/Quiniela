@@ -1,0 +1,96 @@
+:root {
+    --verde-pasto: #28a745;
+    --blanco: #ffffff;
+    --amarillo: #ffc107;
+    --rojo: #dc3545;
+    --gris-claro: #f8f9fa;
+  }
+  
+  body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background-color: var(--blanco);
+    color: #222;
+    padding: 1rem;
+  }
+  
+  header {
+    background-color: var(--verde-pasto);
+    color: var(--blanco);
+    padding: 1rem;
+    border-radius: 10px;
+    text-align: center;
+  }
+  
+  .tabla-quiniela .encabezados {
+    display: flex;
+    justify-content: space-between;
+    background-color: var(--gris-claro);
+    padding: 0.5rem;
+    margin-top: 1rem;
+    border-radius: 10px;
+    font-weight: bold;
+  }
+  
+  .tabla-quiniela #partidos-container {
+    margin-top: 0.5rem;
+  }
+  
+  .partido {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.3rem;
+    border-bottom: 1px solid #ccc;
+  }
+  
+  .opciones {
+    display: flex;
+    justify-content: space-around;
+    width: 100%;
+  }
+  
+  .opciones input {
+    margin: 0 10px;
+    transform: scale(1.2);
+  }
+  
+  .resumen, .premio-info, .datos-participante {
+    margin-top: 1rem;
+    padding: 1rem;
+    background-color: var(--gris-claro);
+    border-radius: 10px;
+  }
+  
+  .botones {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-top: 1rem;
+    justify-content: center;
+  }
+  
+  .botones button {
+    flex: 1 1 45%;
+    background-color: var(--verde-pasto);
+    color: white;
+    border: none;
+    padding: 0.8rem;
+    border-radius: 10px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: 0.3s;
+  }
+  
+  .botones button:hover {
+    background-color: var(--amarillo);
+    color: #000;
+  }
+  
+  @media (min-width: 768px) {
+    .tabla-quiniela .encabezados,
+    .partido {
+      padding: 0.8rem 2rem;
+    }
+  }
+  
