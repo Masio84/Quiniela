@@ -1,55 +1,68 @@
-const token = "6c9fff3ac7c1425aaf1f04dba03abd77";
+const API_URL = "https://api.football-data.org/v4/matches";
+const API_TOKEN = "6c9fff3ac7c1425aaf1f04dba03abd77";
 
-document.addEventListener("DOMContentLoaded", async () => {
-  const inicioSpan = document.getElementById("inicio-quiniela");
-  const cierreSpan = document.getElementById("cierre-quiniela");
-  const container = document.getElementById("partidos-container");
-  const resumenDiv = document.getElementById("resumen-seleccion");
+const ligasPermitidas = [
+  "MEXICO", "CHAMPIONS_LEAGUE", "MLS", "PREMIER_LEAGUE", "LALIGA", "BUNDESLIGA", "SERIE_A", "LIGUE_1"
+];
 
-  const hoy = new Date();
-  const fin = new Date();
-  fin.setDate(hoy.getDate() + 7);
-
-  inicioSpan.textContent = hoy.toLocaleDateString();
-  cierreSpan.textContent = fin.toLocaleString();
-
-  try {
-    const res = await fetch("https://api.football-data.org/v4/matches?dateFrom=" + hoy.toISOString().split("T")[0] + "&dateTo=" + fin.toISOString().split("T")[0], {
-      headers: { "X-Auth-Token": token }
-    });
-
-    const data = await res.json();
-    const partidos = data.matches.filter(m => ["MEX", "UEFA", "MLS", "ENG", "ESP", "ITA", "DEU", "FRA"].includes(m.competition.code));
-
-    container.innerHTML = "";
-
-    partidos.forEach((match, i) => {
-      const fila = document.createElement("div");
-      fila.innerHTML = `
-        <button onclick="seleccionar(${i}, 'L')">${match.homeTeam.name}</button>
-        <button onclick="seleccionar(${i}, 'E')">Empate</button>
-        <button onclick="seleccionar(${i}, 'V')">${match.awayTeam.name}</button>
-      `;
-      container.appendChild(fila);
-    });
-
-    window.selecciones = new Array(partidos.length).fill(null);
-  } catch (e) {
-    container.innerHTML = "<p>Error al cargar partidos.</p>";
-  }
+document.addEventListener("DOMContentLoaded", () => {
+  obtenerPartidos();
 });
 
-function seleccionar(index, tipo) {
-  window.selecciones[index] = tipo;
+async function obtenerPartidos() {
+  const container = document.getElementById("partidos-container");
+  try {
+    const res = await fetch(API_URL, {
+      headers: {
+        "X-Auth-Token": API_TOKEN
+      }
+    });
+    const data = await res.json();
+
+    const partidos = data.matches.filter(m => ligasPermitidas.includes(m.competition.code));
+    container.innerHTML = "";
+
+    partidos.forEach((match, index) => {
+      const div = document.createElement("div");
+      div.className = "partido";
+      div.innerHTML = `
+        <div class="opcion" onclick="seleccionar(${index}, 'L')">${match.homeTeam.name}</div>
+        <div class="opcion" onclick="seleccionar(${index}, 'E')">Empate</div>
+        <div class="opcion" onclick="seleccionar(${index}, 'V')">${match.awayTeam.name}</div>
+      `;
+      container.appendChild(div);
+    });
+
+    window.matches = partidos;
+    window.selecciones = Array(partidos.length).fill(null);
+  } catch (err) {
+    container.innerHTML = "<p>Error al cargar partidos.</p>";
+  }
+}
+
+function seleccionar(index, eleccion) {
+  const container = document.getElementById("partidos-container");
+  const partido = container.children[index];
+  const botones = partido.querySelectorAll(".opcion");
+
+  botones.forEach(btn => btn.classList.remove("seleccionado"));
+
+  const idx = eleccion === 'L' ? 0 : eleccion === 'E' ? 1 : 2;
+  botones[idx].classList.add("seleccionado");
+
+  window.selecciones[index] = eleccion;
+
   actualizarResumen();
 }
 
 function actualizarResumen() {
   const resumen = document.getElementById("resumen-seleccion");
-  resumen.innerHTML = "";
-  window.selecciones.forEach((sel, i) => {
-    const span = document.createElement("span");
-    span.textContent = sel || "-";
-    resumen.appendChild(span);
-  });
+  resumen.innerHTML = window.selecciones.map((s, i) => {
+    if (!s) return `<p>Partido ${i + 1}: Sin seleccionar</p>`;
+    const match = window.matches[i];
+    const nombre = s === 'L' ? match.homeTeam.name : s === 'V' ? match.awayTeam.name : "Empate";
+    return `<p>Partido ${i + 1}: ${nombre}</p>`;
+  }).join('');
 }
+
+// Más funciones como aleatorio, enviar, eliminar, etc., se pueden agregar aquí
