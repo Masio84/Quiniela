@@ -10,7 +10,7 @@ async function obtenerPartidos() {
 
     const ligasPermitidas = ['MEX', 'CL', 'MLS', 'PL', 'PD', 'SA', 'BL1', 'FL1'];
     partidos = data.matches.filter(p => ligasPermitidas.includes(p.competition.code));
-    
+
     renderizarPartidos();
   } catch (err) {
     console.error("Error al obtener partidos:", err);
@@ -30,13 +30,12 @@ function renderizarPartidos() {
     const local = partido.homeTeam.name;
     const visitante = partido.awayTeam.name;
 
-    const html = `
+    div.innerHTML = `
       <div class="equipo" data-index="${i}" data-seleccion="L">${local}</div>
       <div class="equipo" data-index="${i}" data-seleccion="E">🤝</div>
       <div class="equipo" data-index="${i}" data-seleccion="V">${visitante}</div>
     `;
 
-    div.innerHTML = html;
     contenedor.appendChild(div);
     quiniela.push(null);
   });
@@ -61,32 +60,19 @@ function actualizarResumen() {
   resumen.innerHTML = quiniela.map((s, i) => s || '-').join(' | ');
 }
 
+// Botón "Me siento suertudo"
 document.getElementById('btn-suertudo').addEventListener('click', () => {
   quiniela = quiniela.map(() => ['L', 'E', 'V'][Math.floor(Math.random() * 3)]);
   actualizarResumen();
   document.querySelectorAll('.equipo').forEach(btn => {
     const i = parseInt(btn.dataset.index);
     const seleccion = btn.dataset.seleccion;
-    if (quiniela[i] === seleccion) {
-      btn.classList.add('seleccionado');
-    } else {
-      btn.classList.remove('seleccionado');
-    }
+    btn.classList.toggle('seleccionado', quiniela[i] === seleccion);
   });
 });
 
+// Botón "Agregar Quiniela"
 document.getElementById('btn-agregar').addEventListener('click', () => {
-  alert('Quiniela agregada (simulado). Puedes enviar varias antes de enviar.');
-});
-
-document.getElementById('btn-eliminar').addEventListener('click', () => {
-  if (confirm('¿Eliminar quiniela actual?')) {
-    renderizarPartidos();
-    document.getElementById('resumen-seleccion').innerHTML = '';
-  }
-});
-
-document.getElementById('btn-enviar').addEventListener('click', async () => {
   const nombre = document.getElementById('nombre').value.trim();
   const celular = document.getElementById('celular').value.trim();
 
@@ -96,57 +82,90 @@ document.getElementById('btn-enviar').addEventListener('click', async () => {
   }
 
   if (quiniela.includes(null)) {
-    alert('Completa todas las selecciones antes de enviar.');
+    alert('Completa todas las selecciones antes de agregar.');
     return;
   }
 
-  const xml = generarXML(nombre, celular, quiniela);
+  const quinielasGuardadas = JSON.parse(localStorage.getItem('quinielas') || '[]');
+  quinielasGuardadas.push({ nombre, celular, selecciones: [...quiniela] });
+  localStorage.setItem('quinielas', JSON.stringify(quinielasGuardadas));
 
-  const payload = {
-    nombre,
-    celular,
-    xml
-  };
+  alert('Quiniela agregada correctamente. Puedes seguir agregando más.');
+  actualizarContadorQuinielas();
+  renderizarPartidos();
+  document.getElementById('nombre').value = '';
+  document.getElementById('celular').value = '';
+});
 
-  try {
-    const res = await fetch(endpoint, {
-      method: 'POST',
-      body: JSON.stringify(payload),
-    });
-
-    if (res.ok) {
-      // ✅ Guardar también en localStorage para el admin
-      const quinielasGuardadas = JSON.parse(localStorage.getItem('quinielas') || '[]');
-      quinielasGuardadas.push({ nombre, celular, selecciones: [...quiniela] });
-      localStorage.setItem('quinielas', JSON.stringify(quinielasGuardadas));
-
-      alert('Quiniela enviada correctamente. Espera la autorización.');
-      renderizarPartidos();
-      document.getElementById('nombre').value = '';
-      document.getElementById('celular').value = '';
-    } else {
-      alert('Error al enviar la quiniela.');
-    }
-  } catch (err) {
-    console.error(err);
-    alert('Hubo un problema al enviar.');
+// Botón "Eliminar Quiniela"
+document.getElementById('btn-eliminar').addEventListener('click', () => {
+  if (confirm('¿Eliminar quiniela actual?')) {
+    renderizarPartidos();
+    document.getElementById('resumen-seleccion').innerHTML = '';
   }
 });
 
-function generarXML(nombre, celular, seleccion) {
-  const seleccionesXML = seleccion.map((s, i) => `<partido id="${i + 1}">${s}</partido>`).join('');
-  return `<quiniela>
-  <nombre>${nombre}</nombre>
-  <celular>${celular}</celular>
-  <selecciones>${seleccionesXML}</selecciones>
-</quiniela>`;
+// Botón "Enviar Quiniela"
+document.getElementById('btn-enviar').addEventListener('click', async () => {
+  const quinielasGuardadas = JSON.parse(localStorage.getItem('quinielas') || '[]');
+
+  if (quinielasGuardadas.length === 0) {
+    alert('No hay quinielas guardadas para enviar.');
+    return;
+  }
+
+  for (const q of quinielasGuardadas) {
+    const xml = generarXML(q.nombre, q.celular, q.selecciones);
+    const payload = {
+      nombre: q.nombre,
+      celular: q.celular,
+      xml
+    };
+
+    try {
+      const res = await fetch(endpoint, {
+        method: 'POST',
+        body: JSON.stringify(payload),
+      });
+
+      if (!res.ok) {
+        console.error('Error al enviar:', q);
+      }
+    } catch (err) {
+      console.error('Error al enviar:', err);
+    }
+  }
+
+  alert('Todas las quinielas han sido enviadas correctamente.');
+  localStorage.removeItem('quinielas');
+  actualizarContadorQuinielas();
+  renderizarPartidos();
+});
+
+// Función para mostrar cuántas quinielas hay
+function actualizarContadorQuinielas() {
+  const quinielasGuardadas = JSON.parse(localStorage.getItem('quinielas') || '[]');
+  let contador = document.getElementById('contador-quinielas');
+  if (!contador) {
+    contador = document.createElement('span');
+    contador.id = 'contador-quinielas';
+    contador.style.marginLeft = '10px';
+    contador.style.fontWeight = 'bold';
+    contador.style.color = 'green';
+    document.getElementById('btn-agregar').after(contador);
+  }
+  contador.textContent = `(${quinielasGuardadas.length} guardadas)`;
 }
 
+// Botón verificador (no implementado aún)
 document.getElementById('btn-verificar').addEventListener('click', () => {
   alert('Función de verificación en construcción.');
 });
 
+// Fecha simulada
 document.getElementById('inicio-quiniela').textContent = 'Lunes 10:00 AM';
 document.getElementById('cierre-quiniela').textContent = 'Viernes 11:59 PM';
 
+// Iniciar
 obtenerPartidos();
+actualizarContadorQuinielas();
