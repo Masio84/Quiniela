@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Panel de Autorización - Quiniela</title>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+</head>
+<body class="bg-green-50 min-h-screen p-4">
+  <section id="panel-autorizacion" class="max-w-3xl mx-auto bg-white p-6 rounded-xl shadow-md">
+    <h2 class="text-2xl font-bold mb-4 text-green-700">Panel de Autorización de Quinielas</h2>
+
+    <input type="password" id="admin-token" placeholder="Ingresa tu token de acceso" class="border rounded w-full p-2 mb-4">
+
+    <button id="btn-cargar-quinielas" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">Cargar Quinielas</button>
+
+    <div id="lista-quinielas" class="mt-6 space-y-4"></div>
+  </section>
+
+  <script src="admin.js"></script>
+</body>
+</html>
