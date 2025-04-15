@@ -1,117 +1,144 @@
 body {
-  font-family: 'Segoe UI', sans-serif;
-  background-color: #f8fdf5;
+  font-family: 'Exo 2', sans-serif;
+  background-color: #f5f5f5;
+  color: #333;
   margin: 0;
-  padding: 20px;
-  color: #1e3a1d;
+  padding: 0;
 }
 
-header h1 {
-  color: #d62828;
-  font-size: 2em;
-  margin-bottom: 5px;
+header {
+  background-color: #ff9900;
+  color: white;
+  text-align: center;
+  padding: 1rem 0;
 }
 
-header p {
-  color: #555;
-  margin-bottom: 20px;
+h1 {
+  margin: 0;
+  font-size: 2rem;
+}
+
+p {
+  font-size: 1rem;
+  margin-top: 0.5rem;
 }
 
 .tabla-quiniela {
-  margin: 20px 0;
+  margin: 2rem auto;
+  width: 80%;
+  max-width: 800px;
+  background-color: #fff;
+  padding: 1rem;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 
 .encabezados {
   display: flex;
-  justify-content: space-between;
+  justify-content: space-around;
   font-weight: bold;
-  background-color: #fef9c3;
-  padding: 10px;
-  border-bottom: 2px solid #ccc;
 }
 
 .titulo {
-  flex: 1;
+  width: 30%;
+  text-align: center;
+  padding: 0.5rem;
+  background-color: #f0f0f0;
+}
+
+#partidos-container {
+  margin-top: 1rem;
+}
+
+.partido {
+  display: flex;
+  justify-content: space-around;
+  margin: 1rem 0;
+}
+
+.equipo {
+  width: 30%;
+  text-align: center;
+  padding: 1rem;
+  background-color: #ddd;
+  cursor: pointer;
+  border-radius: 8px;
+  transition: background-color 0.3s;
+}
+
+.equipo:hover {
+  background-color: #ffcc00;
+}
+
+.equipo.seleccionado {
+  background-color: #4caf50;
+  color: white;
+  font-weight: bold;
+}
+
+.resumen {
+  margin-top: 2rem;
   text-align: center;
 }
 
-#partidos-container > div {
-  display: flex;
-  justify-content: space-between;
-  padding: 8px;
-  border-bottom: 1px solid #ddd;
-}
-
-#partidos-container button {
-  flex: 1;
-  margin: 0 2px;
-  padding: 5px;
-  border: 1px solid #ccc;
-  border-radius: 5px;
-  cursor: pointer;
-}
-
-#partidos-container button:hover {
-  background-color: #cce5cc;
-}
-
-.resumen,
-.premio-info,
-.datos-participante,
 .botones {
-  margin-top: 20px;
-}
-
-#resumen-seleccion {
   display: flex;
-  flex-wrap: wrap;
-  gap: 5px;
+  justify-content: center;
+  gap: 1rem;
+  margin-top: 2rem;
 }
 
-#resumen-seleccion span {
-  background: #ffd60a;
-  padding: 5px 10px;
-  border-radius: 5px;
-}
-
-.datos-participante input {
-  display: block;
-  width: 100%;
-  margin-bottom: 10px;
-  padding: 10px;
-  border: 1px solid #ccc;
-  border-radius: 5px;
-}
-
-.botones button {
-  display: block;
-  width: 100%;
-  margin-bottom: 10px;
-  padding: 12px;
-  font-weight: bold;
-  background-color: #38b000;
+button {
+  padding: 0.75rem 2rem;
+  background-color: #4caf50;
   color: white;
   border: none;
   border-radius: 8px;
-  transition: background 0.3s;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background-color 0.3s;
 }
 
-.botones button:hover {
-  background-color: #2d6a4f;
+button:hover {
+  background-color: #45a049;
 }
 
 footer {
+  margin-top: 2rem;
   text-align: center;
-  font-size: 0.75rem;
-  margin-top: 2.5rem;
-  color: #9ca3af;
+  font-size: 0.8rem;
+  color: #888;
 }
 
 footer a {
+  color: #007bff;
   text-decoration: none;
-  color: inherit;
 }
 
 footer a:hover {
-  color: #16a34a;
+  text-decoration: underline;
+}
+
+/* Estilos para el contador de quinielas */
+#contador-quinielas {
+  font-weight: bold;
+  color: #ff9900;
+  margin-left: 10px;
+}
+
+.datos-participante input {
+  padding: 0.5rem;
+  margin: 0.5rem 0;
+  width: 100%;
+  max-width: 300px;
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+}
+
+.datos-participante input:focus {
+  border-color: #ff9900;
+  outline: none;
 }
