@@ -18,9 +18,74 @@
   </section>
 
   <footer class="text-center text-xs mt-10 text-gray-400">
-    <a href="index.html" class="hover:text-green-600">Volver a la página principal</a>
+    <a href="index.html" class="hover:text-green-600">Volver a la página principal</a> |
+    <span class="text-gray-400">Panel de autorización</span>
   </footer>
 
-  <script src="admin.js"></script>
+  <script>
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycby2fNmCyuNVrIguOIumC8duLGab0L1c_qRJXR1pX_x2LNRpBmm56jnNuffZ8eyreQqc/exec";
+
+    const ADMIN_TOKENS = [
+      "token1",
+      "token2",
+      "token3"
+    ];
+
+    document.getElementById('btn-cargar-quinielas').addEventListener('click', async () => {
+      const token = document.getElementById('admin-token').value;
+      if (!ADMIN_TOKENS.includes(token)) {
+        alert('Token inválido');
+        return;
+      }
+
+      const quinielas = JSON.parse(localStorage.getItem('quinielas')) || [];
+      const contenedor = document.getElementById('lista-quinielas');
+      contenedor.innerHTML = '';
+
+      quinielas.forEach((q, index) => {
+        const div = document.createElement('div');
+        div.className = 'border p-4 rounded shadow';
+        div.innerHTML = `
+          <p><strong>Nombre:</strong> ${q.nombre}</p>
+          <p><strong>Celular:</strong> ${q.celular}</p>
+          <p><strong>Selección:</strong> ${q.selecciones.join(' - ')}</p>
+          <button class="bg-green-500 text-white px-4 py-1 mt-2 rounded" onclick="autorizarQuiniela(${index})">Autorizar</button>
+        `;
+        contenedor.appendChild(div);
+      });
+    });
+
+    async function autorizarQuiniela(index) {
+      const quinielas = JSON.parse(localStorage.getItem('quinielas')) || [];
+      const q = quinielas[index];
+
+      const xml = `<?xml version="1.0" encoding="UTF-8"?>\n` +
+        `<quiniela>\n` +
+        `  <nombre>${q.nombre}</nombre>\n` +
+        `  <celular>${q.celular}</celular>\n` +
+        `  <selecciones>${q.selecciones.join(',')}</selecciones>\n` +
+        `</quiniela>`;
+
+      const res = await fetch(SCRIPT_URL, {
+        method: 'POST',
+        body: JSON.stringify({
+          nombre: q.nombre,
+          xml: xml
+        }),
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (res.ok) {
+        alert('Quiniela autorizada y guardada en Drive');
+        quinielas.splice(index, 1);
+        localStorage.setItem('quinielas', JSON.stringify(quinielas));
+        document.getElementById('btn-cargar-quinielas').click();
+      } else {
+        alert('Error al guardar en Drive');
+      }
+    }
+  </script>
 </body>
 </html>
