@@ -10,6 +10,7 @@
   <section id="panel-autorizacion" class="max-w-3xl mx-auto bg-white p-6 rounded-xl shadow-md">
     <h2 class="text-2xl font-bold mb-4 text-green-700">Panel de Autorización de Quinielas</h2>
 
+    <!-- Campo de contraseña -->
     <input type="password" id="admin-token" placeholder="Ingresa tu token de acceso" class="border rounded w-full p-2 mb-4">
 
     <button id="btn-cargar-quinielas" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">Cargar Quinielas</button>
@@ -23,7 +24,7 @@
   </footer>
 
   <script>
-    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycby2fNmCyuNVrIguOIumC8duLGab0L1c_qRJXR1pX_x2LNRpBmm56jnNuffZ8eyreQqc/exec";
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbz34sL4DFhmMkAGqeAg5aVs1f1_507SFyGulVQDrm745yAo9wQEr39ONTl4A1UjjzNM/exec";
 
     const ADMIN_TOKENS = [
       "token1",
@@ -70,7 +71,8 @@
         method: 'POST',
         body: JSON.stringify({
           nombre: q.nombre,
-          xml: xml
+          xml: xml,
+          password: "Chidote2025"  // Aquí se pasa la contraseña
         }),
         headers: {
           'Content-Type': 'application/json'
