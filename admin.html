@@ -26,15 +26,12 @@
   <script>
     const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbz34sL4DFhmMkAGqeAg5aVs1f1_507SFyGulVQDrm745yAo9wQEr39ONTl4A1UjjzNM/exec";
 
-    // Lista de tokens válidos
-    const ADMIN_TOKENS = [
-      "Chidote2025"  // La contraseña ahora es un token válido
-    ];
-
     document.getElementById('btn-cargar-quinielas').addEventListener('click', async () => {
       const token = document.getElementById('admin-token').value;
-      if (!ADMIN_TOKENS.includes(token)) {
-        alert('Token inválido');
+      
+      // Validación solo del lado del cliente, no es necesario verificar token aquí
+      if (!token || token.trim() === "") {
+        alert("Debes ingresar un token válido.");
         return;
       }
 
@@ -49,13 +46,13 @@
           <p><strong>Nombre:</strong> ${q.nombre}</p>
           <p><strong>Celular:</strong> ${q.celular}</p>
           <p><strong>Selección:</strong> ${q.selecciones.join(' - ')}</p>
-          <button class="bg-green-500 text-white px-4 py-1 mt-2 rounded" onclick="autorizarQuiniela(${index})">Autorizar</button>
+          <button class="bg-green-500 text-white px-4 py-1 mt-2 rounded" onclick="autorizarQuiniela(${index}, '${token}')">Autorizar</button>
         `;
         contenedor.appendChild(div);
       });
     });
 
-    async function autorizarQuiniela(index) {
+    async function autorizarQuiniela(index, token) {
       const quinielas = JSON.parse(localStorage.getItem('quinielas')) || [];
       const q = quinielas[index];
 
@@ -71,7 +68,7 @@
         body: JSON.stringify({
           nombre: q.nombre,
           xml: xml,
-          password: "Chidote2025"  // Aquí se pasa la contraseña
+          token: token  // Pasamos el token ingresado
         }),
         headers: {
           'Content-Type': 'application/json'
