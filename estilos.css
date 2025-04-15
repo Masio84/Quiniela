@@ -1,95 +1,117 @@
-:root {
-  --verde-pasto: #28a745;
-  --blanco: #ffffff;
-  --amarillo: #ffc107;
-  --rojo: #dc3545;
-  --gris-claro: #f8f9fa;
-}
-
 body {
+  font-family: 'Segoe UI', sans-serif;
+  background-color: #f8fdf5;
   margin: 0;
-  font-family: Arial, sans-serif;
-  background-color: var(--blanco);
-  color: #222;
-  padding: 1rem;
+  padding: 20px;
+  color: #1e3a1d;
 }
 
-header {
-  background-color: var(--verde-pasto);
-  color: var(--blanco);
-  padding: 1rem;
-  border-radius: 10px;
+header h1 {
+  color: #d62828;
+  font-size: 2em;
+  margin-bottom: 5px;
+}
+
+header p {
+  color: #555;
+  margin-bottom: 20px;
+}
+
+.tabla-quiniela {
+  margin: 20px 0;
+}
+
+.encabezados {
+  display: flex;
+  justify-content: space-between;
+  font-weight: bold;
+  background-color: #fef9c3;
+  padding: 10px;
+  border-bottom: 2px solid #ccc;
+}
+
+.titulo {
+  flex: 1;
   text-align: center;
 }
 
-.tabla-quiniela .encabezados {
+#partidos-container > div {
   display: flex;
   justify-content: space-between;
-  background-color: var(--gris-claro);
-  padding: 0.5rem;
-  margin-top: 1rem;
-  border-radius: 10px;
-  font-weight: bold;
+  padding: 8px;
+  border-bottom: 1px solid #ddd;
 }
 
-.tabla-quiniela #partidos-container {
-  margin-top: 0.5rem;
+#partidos-container button {
+  flex: 1;
+  margin: 0 2px;
+  padding: 5px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  cursor: pointer;
 }
 
-.partido {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 0.3rem;
-  border-bottom: 1px solid #ccc;
+#partidos-container button:hover {
+  background-color: #cce5cc;
 }
 
-.opciones {
-  display: flex;
-  justify-content: space-around;
-  width: 100%;
-}
-
-.opciones input {
-  margin: 0 10px;
-  transform: scale(1.2);
-}
-
-.resumen, .premio-info, .datos-participante {
-  margin-top: 1rem;
-  padding: 1rem;
-  background-color: var(--gris-claro);
-  border-radius: 10px;
-}
-
+.resumen,
+.premio-info,
+.datos-participante,
 .botones {
+  margin-top: 20px;
+}
+
+#resumen-seleccion {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.5rem;
-  margin-top: 1rem;
-  justify-content: center;
+  gap: 5px;
+}
+
+#resumen-seleccion span {
+  background: #ffd60a;
+  padding: 5px 10px;
+  border-radius: 5px;
+}
+
+.datos-participante input {
+  display: block;
+  width: 100%;
+  margin-bottom: 10px;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
 }
 
 .botones button {
-  flex: 1 1 45%;
-  background-color: var(--verde-pasto);
+  display: block;
+  width: 100%;
+  margin-bottom: 10px;
+  padding: 12px;
+  font-weight: bold;
+  background-color: #38b000;
   color: white;
   border: none;
-  padding: 0.8rem;
-  border-radius: 10px;
-  font-weight: bold;
-  cursor: pointer;
-  transition: 0.3s;
+  border-radius: 8px;
+  transition: background 0.3s;
 }
 
 .botones button:hover {
-  background-color: var(--amarillo);
-  color: #000;
+  background-color: #2d6a4f;
 }
 
-@media (min-width: 768px) {
-  .tabla-quiniela .encabezados,
-  .partido {
-    padding: 0.8rem 2rem;
-  }
+footer {
+  text-align: center;
+  font-size: 0.75rem;
+  margin-top: 2.5rem;
+  color: #9ca3af;
+}
+
+footer a {
+  text-decoration: none;
+  color: inherit;
+}
+
+footer a:hover {
+  color: #16a34a;
 }
