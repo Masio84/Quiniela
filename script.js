@@ -8,8 +8,7 @@ async function obtenerPartidos() {
     const res = await fetch(endpoint);
     const data = await res.json();
 
-    // Filtrar por competencia (Liga MX, Champions, MLS, Ligas Europeas)
-    const ligasPermitidas = ['MEX', 'CL', 'MLS', 'PL', 'PD', 'SA', 'BL1', 'FL1']; // Liga MX, Champions, etc
+    const ligasPermitidas = ['MEX', 'CL', 'MLS', 'PL', 'PD', 'SA', 'BL1', 'FL1'];
     partidos = data.matches.filter(p => ligasPermitidas.includes(p.competition.code));
     
     renderizarPartidos();
@@ -48,7 +47,6 @@ function renderizarPartidos() {
       const seleccion = boton.dataset.seleccion;
       quiniela[i] = seleccion;
 
-      // resaltar la selección
       const grupo = boton.parentElement.querySelectorAll('.equipo');
       grupo.forEach(e => e.classList.remove('seleccionado'));
       boton.classList.add('seleccionado');
@@ -117,6 +115,11 @@ document.getElementById('btn-enviar').addEventListener('click', async () => {
     });
 
     if (res.ok) {
+      // ✅ Guardar también en localStorage para el admin
+      const quinielasGuardadas = JSON.parse(localStorage.getItem('quinielas') || '[]');
+      quinielasGuardadas.push({ nombre, celular, selecciones: [...quiniela] });
+      localStorage.setItem('quinielas', JSON.stringify(quinielasGuardadas));
+
       alert('Quiniela enviada correctamente. Espera la autorización.');
       renderizarPartidos();
       document.getElementById('nombre').value = '';
@@ -143,9 +146,7 @@ document.getElementById('btn-verificar').addEventListener('click', () => {
   alert('Función de verificación en construcción.');
 });
 
-// Fecha de inicio/cierre simuladas
 document.getElementById('inicio-quiniela').textContent = 'Lunes 10:00 AM';
 document.getElementById('cierre-quiniela').textContent = 'Viernes 11:59 PM';
 
-// Iniciar
 obtenerPartidos();
