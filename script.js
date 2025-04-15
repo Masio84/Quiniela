@@ -20,7 +20,7 @@ document.getElementById('btn-enviar').addEventListener('click', async () => {
   };
 
   try {
-    const res = await fetch('https://script.google.com/macros/s/AKfycbzNzQMnSHksd4AiwhiuaCeX4SALb6uh29oA8thwXxDBzeIv1yzbiXiuItUyIluLLWgD1A/exec', {
+    const res = await fetch('https://script.google.com/macros/s/AKfycbxQY4BsOfgd-TldqXjpNAJ00axPLayyQeJBqVtn_aKsjCpXroy8j6uS7Ef0tECsjcwiDw/exec', {
       method: 'POST',
       body: JSON.stringify(body)
     });
