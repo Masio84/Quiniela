@@ -1,19 +1,22 @@
-const token = '6c9fff3ac7c1425aaf1f04dba03abd77';
-const endpoint = 'https://api.football-data.org/v4/matches';
-const headers = { 'X-Auth-Token': token };
+const endpoint = 'https://script.google.com/macros/s/AKfycbx6OqbIbEnrhZTuwOAItttPen9_8TpEPlitpCsNrPJUFxVKYJ1Kfa9-pGmtbhUSTSuu/exec';
 
 let quiniela = [];
 let partidos = [];
 
 async function obtenerPartidos() {
-  const res = await fetch(endpoint, { headers });
-  const data = await res.json();
+  try {
+    const res = await fetch(endpoint);
+    const data = await res.json();
 
-  // Filtrar por competencia (Liga MX, Champions, MLS, Ligas Europeas)
-  const ligasPermitidas = ['MEX', 'CL', 'MLS', 'PL', 'PD', 'SA', 'BL1', 'FL1']; // Liga MX, Champions, etc
-  partidos = data.matches.filter(p => ligasPermitidas.includes(p.competition.code));
-  
-  renderizarPartidos();
+    // Filtrar por competencia (Liga MX, Champions, MLS, Ligas Europeas)
+    const ligasPermitidas = ['MEX', 'CL', 'MLS', 'PL', 'PD', 'SA', 'BL1', 'FL1']; // Liga MX, Champions, etc
+    partidos = data.matches.filter(p => ligasPermitidas.includes(p.competition.code));
+    
+    renderizarPartidos();
+  } catch (err) {
+    console.error("Error al obtener partidos:", err);
+    document.getElementById('partidos-container').innerHTML = '<p>Error al cargar partidos. Intenta más tarde.</p>';
+  }
 }
 
 function renderizarPartidos() {
@@ -99,14 +102,16 @@ document.getElementById('btn-enviar').addEventListener('click', async () => {
     return;
   }
 
+  const xml = generarXML(nombre, celular, quiniela);
+
   const payload = {
     nombre,
     celular,
-    seleccion: quiniela
+    xml
   };
 
   try {
-    const res = await fetch('https://script.google.com/macros/s/AKfycby2fNmCyuNVrIguOIumC8duLGab0L1c_qRJXR1pX_x2LNRpBmm56jnNuffZ8eyreQqc/exec', {
+    const res = await fetch(endpoint, {
       method: 'POST',
       body: JSON.stringify(payload),
     });
@@ -124,6 +129,15 @@ document.getElementById('btn-enviar').addEventListener('click', async () => {
     alert('Hubo un problema al enviar.');
   }
 });
+
+function generarXML(nombre, celular, seleccion) {
+  const seleccionesXML = seleccion.map((s, i) => `<partido id="${i + 1}">${s}</partido>`).join('');
+  return `<quiniela>
+  <nombre>${nombre}</nombre>
+  <celular>${celular}</celular>
+  <selecciones>${seleccionesXML}</selecciones>
+</quiniela>`;
+}
 
 document.getElementById('btn-verificar').addEventListener('click', () => {
   alert('Función de verificación en construcción.');
