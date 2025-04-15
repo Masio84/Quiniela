@@ -6,7 +6,7 @@
   <title>Panel de Autorización - Quiniela</title>
   <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
 </head>
-<body class="bg-green-50 min-h-screen p-4">
+<body class="bg-green-50 min-h-screen p-4 flex flex-col justify-between">
   <section id="panel-autorizacion" class="max-w-3xl mx-auto bg-white p-6 rounded-xl shadow-md">
     <h2 class="text-2xl font-bold mb-4 text-green-700">Panel de Autorización de Quinielas</h2>
 
@@ -16,6 +16,10 @@
 
     <div id="lista-quinielas" class="mt-6 space-y-4"></div>
   </section>
+
+  <footer class="text-center text-xs mt-10 text-gray-400">
+    <a href="index.html" class="hover:text-green-600">Volver a la página principal</a>
+  </footer>
 
   <script src="admin.js"></script>
 </body>
