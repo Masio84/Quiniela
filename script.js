@@ -105,12 +105,34 @@ document.getElementById('btn-eliminar').addEventListener('click', () => {
   }
 });
 
+// Función para mostrar cuántas quinielas hay
+function actualizarContadorQuinielas() {
+  const quinielasGuardadas = JSON.parse(localStorage.getItem('quinielas') || '[]');
+  let contador = document.getElementById('contador-quinielas');
+  if (!contador) {
+    contador = document.createElement('span');
+    contador.id = 'contador-quinielas';
+    contador.style.marginLeft = '10px';
+    contador.style.fontWeight = 'bold';
+    contador.style.color = 'green';
+    document.getElementById('btn-agregar').after(contador);
+  }
+  contador.textContent = `(${quinielasGuardadas.length} guardadas)`;
+}
+
 // Botón "Enviar Quiniela"
 document.getElementById('btn-enviar').addEventListener('click', async () => {
   const quinielasGuardadas = JSON.parse(localStorage.getItem('quinielas') || '[]');
 
   if (quinielasGuardadas.length === 0) {
     alert('No hay quinielas guardadas para enviar.');
+    return;
+  }
+
+  const listaNombres = quinielasGuardadas.map(q => `<li>${q.nombre}</li>`).join('');
+  const confirmarEnvio = confirm(`Las siguientes quinielas están listas para enviar:\n\n${listaNombres}\n\n¿Confirmas el envío?`);
+
+  if (!confirmarEnvio) {
     return;
   }
 
@@ -142,19 +164,14 @@ document.getElementById('btn-enviar').addEventListener('click', async () => {
   renderizarPartidos();
 });
 
-// Función para mostrar cuántas quinielas hay
-function actualizarContadorQuinielas() {
-  const quinielasGuardadas = JSON.parse(localStorage.getItem('quinielas') || '[]');
-  let contador = document.getElementById('contador-quinielas');
-  if (!contador) {
-    contador = document.createElement('span');
-    contador.id = 'contador-quinielas';
-    contador.style.marginLeft = '10px';
-    contador.style.fontWeight = 'bold';
-    contador.style.color = 'green';
-    document.getElementById('btn-agregar').after(contador);
-  }
-  contador.textContent = `(${quinielasGuardadas.length} guardadas)`;
+// Función para generar el XML de las quinielas
+function generarXML(nombre, celular, seleccion) {
+  const seleccionesXML = seleccion.map((s, i) => `<partido id="${i + 1}">${s}</partido>`).join('');
+  return `<quiniela>
+  <nombre>${nombre}</nombre>
+  <celular>${celular}</celular>
+  <selecciones>${seleccionesXML}</selecciones>
+</quiniela>`;
 }
 
 // Botón verificador (no implementado aún)
