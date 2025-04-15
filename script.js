@@ -1,68 +1,137 @@
-const API_URL = "https://api.football-data.org/v4/matches";
-const API_TOKEN = "6c9fff3ac7c1425aaf1f04dba03abd77";
+const token = '6c9fff3ac7c1425aaf1f04dba03abd77';
+const endpoint = 'https://api.football-data.org/v4/matches';
+const headers = { 'X-Auth-Token': token };
 
-const ligasPermitidas = [
-  "MEXICO", "CHAMPIONS_LEAGUE", "MLS", "PREMIER_LEAGUE", "LALIGA", "BUNDESLIGA", "SERIE_A", "LIGUE_1"
-];
-
-document.addEventListener("DOMContentLoaded", () => {
-  obtenerPartidos();
-});
+let quiniela = [];
+let partidos = [];
 
 async function obtenerPartidos() {
-  const container = document.getElementById("partidos-container");
-  try {
-    const res = await fetch(API_URL, {
-      headers: {
-        "X-Auth-Token": API_TOKEN
-      }
-    });
-    const data = await res.json();
+  const res = await fetch(endpoint, { headers });
+  const data = await res.json();
 
-    const partidos = data.matches.filter(m => ligasPermitidas.includes(m.competition.code));
-    container.innerHTML = "";
-
-    partidos.forEach((match, index) => {
-      const div = document.createElement("div");
-      div.className = "partido";
-      div.innerHTML = `
-        <div class="opcion" onclick="seleccionar(${index}, 'L')">${match.homeTeam.name}</div>
-        <div class="opcion" onclick="seleccionar(${index}, 'E')">Empate</div>
-        <div class="opcion" onclick="seleccionar(${index}, 'V')">${match.awayTeam.name}</div>
-      `;
-      container.appendChild(div);
-    });
-
-    window.matches = partidos;
-    window.selecciones = Array(partidos.length).fill(null);
-  } catch (err) {
-    container.innerHTML = "<p>Error al cargar partidos.</p>";
-  }
+  // Filtrar por competencia (Liga MX, Champions, MLS, Ligas Europeas)
+  const ligasPermitidas = ['MEX', 'CL', 'MLS', 'PL', 'PD', 'SA', 'BL1', 'FL1']; // Liga MX, Champions, etc
+  partidos = data.matches.filter(p => ligasPermitidas.includes(p.competition.code));
+  
+  renderizarPartidos();
 }
 
-function seleccionar(index, eleccion) {
-  const container = document.getElementById("partidos-container");
-  const partido = container.children[index];
-  const botones = partido.querySelectorAll(".opcion");
+function renderizarPartidos() {
+  const contenedor = document.getElementById('partidos-container');
+  contenedor.innerHTML = '';
+  quiniela = [];
 
-  botones.forEach(btn => btn.classList.remove("seleccionado"));
+  partidos.forEach((partido, i) => {
+    const div = document.createElement('div');
+    div.classList.add('partido');
 
-  const idx = eleccion === 'L' ? 0 : eleccion === 'E' ? 1 : 2;
-  botones[idx].classList.add("seleccionado");
+    const local = partido.homeTeam.name;
+    const visitante = partido.awayTeam.name;
 
-  window.selecciones[index] = eleccion;
+    const html = `
+      <div class="equipo" data-index="${i}" data-seleccion="L">${local}</div>
+      <div class="equipo" data-index="${i}" data-seleccion="E">🤝</div>
+      <div class="equipo" data-index="${i}" data-seleccion="V">${visitante}</div>
+    `;
 
-  actualizarResumen();
+    div.innerHTML = html;
+    contenedor.appendChild(div);
+    quiniela.push(null);
+  });
+
+  document.querySelectorAll('.equipo').forEach(boton => {
+    boton.addEventListener('click', () => {
+      const i = parseInt(boton.dataset.index);
+      const seleccion = boton.dataset.seleccion;
+      quiniela[i] = seleccion;
+
+      // resaltar la selección
+      const grupo = boton.parentElement.querySelectorAll('.equipo');
+      grupo.forEach(e => e.classList.remove('seleccionado'));
+      boton.classList.add('seleccionado');
+
+      actualizarResumen();
+    });
+  });
 }
 
 function actualizarResumen() {
-  const resumen = document.getElementById("resumen-seleccion");
-  resumen.innerHTML = window.selecciones.map((s, i) => {
-    if (!s) return `<p>Partido ${i + 1}: Sin seleccionar</p>`;
-    const match = window.matches[i];
-    const nombre = s === 'L' ? match.homeTeam.name : s === 'V' ? match.awayTeam.name : "Empate";
-    return `<p>Partido ${i + 1}: ${nombre}</p>`;
-  }).join('');
+  const resumen = document.getElementById('resumen-seleccion');
+  resumen.innerHTML = quiniela.map((s, i) => s || '-').join(' | ');
 }
 
-// Más funciones como aleatorio, enviar, eliminar, etc., se pueden agregar aquí
+document.getElementById('btn-suertudo').addEventListener('click', () => {
+  quiniela = quiniela.map(() => ['L', 'E', 'V'][Math.floor(Math.random() * 3)]);
+  actualizarResumen();
+  document.querySelectorAll('.equipo').forEach(btn => {
+    const i = parseInt(btn.dataset.index);
+    const seleccion = btn.dataset.seleccion;
+    if (quiniela[i] === seleccion) {
+      btn.classList.add('seleccionado');
+    } else {
+      btn.classList.remove('seleccionado');
+    }
+  });
+});
+
+document.getElementById('btn-agregar').addEventListener('click', () => {
+  alert('Quiniela agregada (simulado). Puedes enviar varias antes de enviar.');
+});
+
+document.getElementById('btn-eliminar').addEventListener('click', () => {
+  if (confirm('¿Eliminar quiniela actual?')) {
+    renderizarPartidos();
+    document.getElementById('resumen-seleccion').innerHTML = '';
+  }
+});
+
+document.getElementById('btn-enviar').addEventListener('click', async () => {
+  const nombre = document.getElementById('nombre').value.trim();
+  const celular = document.getElementById('celular').value.trim();
+
+  if (!nombre || !celular) {
+    alert('Por favor, ingresa tu nombre y celular.');
+    return;
+  }
+
+  if (quiniela.includes(null)) {
+    alert('Completa todas las selecciones antes de enviar.');
+    return;
+  }
+
+  const payload = {
+    nombre,
+    celular,
+    seleccion: quiniela
+  };
+
+  try {
+    const res = await fetch('https://script.google.com/macros/s/AKfycby2fNmCyuNVrIguOIumC8duLGab0L1c_qRJXR1pX_x2LNRpBmm56jnNuffZ8eyreQqc/exec', {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    });
+
+    if (res.ok) {
+      alert('Quiniela enviada correctamente. Espera la autorización.');
+      renderizarPartidos();
+      document.getElementById('nombre').value = '';
+      document.getElementById('celular').value = '';
+    } else {
+      alert('Error al enviar la quiniela.');
+    }
+  } catch (err) {
+    console.error(err);
+    alert('Hubo un problema al enviar.');
+  }
+});
+
+document.getElementById('btn-verificar').addEventListener('click', () => {
+  alert('Función de verificación en construcción.');
+});
+
+// Fecha de inicio/cierre simuladas
+document.getElementById('inicio-quiniela').textContent = 'Lunes 10:00 AM';
+document.getElementById('cierre-quiniela').textContent = 'Viernes 11:59 PM';
+
+// Iniciar
+obtenerPartidos();
