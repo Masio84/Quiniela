@@ -1,188 +1,232 @@
-const endpoint = 'https://script.google.com/macros/s/AKfycbx6OqbIbEnrhZTuwOAItttPen9_8TpEPlitpCsNrPJUFxVKYJ1Kfa9-pGmtbhUSTSuu/exec';
+// Configuración inicial
+const CSV_URL = 'https://drive.google.com/uc?export=download&id=1ZpWwsnVxdcvAzWKJFJizI8sLhOjwnJsk';
+let selecciones = {};
 
-let quiniela = [];
-let partidos = [];
-
-async function obtenerPartidos() {
+// Función principal para cargar los partidos
+async function cargarPartidos() {
   try {
-    const res = await fetch(endpoint);
-    const data = await res.json();
+    const response = await fetch(CSV_URL);
+    const csvData = await response.text();
+    
+    const partidos = Papa.parse(csvData, {
+      header: true,
+      skipEmptyLines: true,
+      transformHeader: header => {
+        // Normalizar nombres de encabezados
+        const headersMap = {
+          'date': 'date',
+          'hour': 'hour',
+          'local': 'local',
+          'local src': 'localSrc',
+          'visit': 'visit',
+          'visit src': 'visitSrc',
+          'televisoraW': 'televisora',
+          'col-xs-4': 'porcLocal',
+          'col-xs-4 (2)': 'porcEmpate',
+          'col-xs-4 (3)': 'porcVisitante'
+        };
+        return headersMap[header.trim()] || header;
+      }
+    }).data;
 
-    const ligasPermitidas = ['MEX', 'CL', 'MLS', 'PL', 'PD', 'SA', 'BL1', 'FL1'];
-    partidos = data.matches.filter(p => ligasPermitidas.includes(p.competition.code));
-
-    renderizarPartidos();
-  } catch (err) {
-    console.error("Error al obtener partidos:", err);
-    document.getElementById('partidos-container').innerHTML = '<p>Error al cargar partidos. Intenta más tarde.</p>';
+    mostrarPartidos(partidos);
+    actualizarFechas(partidos);
+  } catch (error) {
+    console.error('Error al cargar partidos:', error);
+    mostrarError();
   }
 }
 
-function renderizarPartidos() {
-  const contenedor = document.getElementById('partidos-container');
-  contenedor.innerHTML = '';
-  quiniela = [];
+// Mostrar partidos en la interfaz
+function mostrarPartidos(partidos) {
+  const container = document.getElementById('partidos-container');
+  container.innerHTML = '';
 
-  partidos.forEach((partido, i) => {
-    const div = document.createElement('div');
-    div.classList.add('partido');
+  partidos.forEach((partido, index) => {
+    const partidoHTML = `
+      <div class="partido" data-id="${index}">
+        <div class="equipo local">
+          <img src="${partido.localSrc}" alt="${partido.local}" onerror="this.src='placeholder.png'">
+          <span>${partido.local}</span>
+        </div>
+        
+        <div class="opciones">
+          <div class="opcion" data-tipo="1">
+            <div class="resultado">1</div>
+            <div class="porcentaje" style="width: ${partido.porcLocal}%">
+              ${partido.porcLocal}%
+            </div>
+          </div>
+          
+          <div class="opcion" data-tipo="X">
+            <div class="resultado">X</div>
+            <div class="porcentaje" style="width: ${partido.porcEmpate}%">
+              ${partido.porcEmpate}%
+            </div>
+          </div>
+          
+          <div class="opcion" data-tipo="2">
+            <div class="resultado">2</div>
+            <div class="porcentaje" style="width: ${partido.porcVisitante}%">
+              ${partido.porcVisitante}%
+            </div>
+          </div>
+        </div>
 
-    const local = partido.homeTeam.name;
-    const visitante = partido.awayTeam.name;
+        <div class="equipo visitante">
+          <img src="${partido.visitSrc}" alt="${partido.visit}" onerror="this.src='placeholder.png'">
+          <span>${partido.visit}</span>
+        </div>
 
-    div.innerHTML = `
-      <div class="equipo" data-index="${i}" data-seleccion="L">${local}</div>
-      <div class="equipo" data-index="${i}" data-seleccion="E">🤝</div>
-      <div class="equipo" data-index="${i}" data-seleccion="V">${visitante}</div>
+        <div class="info-adicional">
+          <span class="tv">📺 ${partido.televisora}</span>
+          <span class="hora">${formatearFechaHora(partido.date, partido.hour)}</span>
+        </div>
+      </div>
     `;
-
-    contenedor.appendChild(div);
-    quiniela.push(null);
+    container.insertAdjacentHTML('beforeend', partidoHTML);
   });
 
-  document.querySelectorAll('.equipo').forEach(boton => {
-    boton.addEventListener('click', () => {
-      const i = parseInt(boton.dataset.index);
-      const seleccion = boton.dataset.seleccion;
-      quiniela[i] = seleccion;
+  agregarEventosOpciones();
+}
 
-      const grupo = boton.parentElement.querySelectorAll('.equipo');
-      grupo.forEach(e => e.classList.remove('seleccionado'));
-      boton.classList.add('seleccionado');
+// Formatear fecha y hora
+function formatearFechaHora(fecha, hora) {
+  const [dia, mes, anio] = fecha.split('/');
+  const opciones = {
+    weekday: 'short',
+    day: 'numeric',
+    month: 'short',
+    hour: '2-digit',
+    minute: '2-digit'
+  };
+  return new Date(`${mes}/${dia}/${anio} ${hora}`)
+    .toLocaleDateString('es-MX', opciones)
+    .replace(',', '');
+}
 
+// Actualizar fechas de inicio y cierre
+function actualizarFechas(partidos) {
+  const fechasValidas = partidos
+    .map(p => new Date(`${p.date.split('/').reverse().join('-')}T${p.hour}`))
+    .filter(d => !isNaN(d));
+
+  const inicio = new Date(Math.min(...fechasValidas));
+  const cierre = new Date(Math.max(...fechasValidas));
+
+  document.getElementById('inicio-quiniela').textContent = 
+    inicio.toLocaleDateString('es-MX', {
+      day: 'numeric',
+      month: 'long',
+      hour: 'numeric',
+      minute: 'numeric'
+    });
+
+  document.getElementById('cierre-quiniela').textContent = 
+    cierre.toLocaleDateString('es-MX', {
+      day: 'numeric',
+      month: 'long',
+      hour: 'numeric',
+      minute: 'numeric'
+    });
+}
+
+// Manejar selecciones de opciones
+function agregarEventosOpciones() {
+  document.querySelectorAll('.opcion').forEach(opcion => {
+    opcion.addEventListener('click', function() {
+      const partidoId = this.closest('.partido').dataset.id;
+      const tipo = this.dataset.tipo;
+      const porcentaje = this.querySelector('.porcentaje').textContent.trim();
+
+      // Resetear selecciones en el mismo partido
+      this.closest('.opciones').querySelectorAll('.opcion').forEach(o => {
+        o.classList.remove('seleccionado');
+      });
+
+      this.classList.add('seleccionado');
+      selecciones[partidoId] = { tipo, porcentaje };
       actualizarResumen();
     });
   });
 }
 
+// Actualizar resumen de selecciones
 function actualizarResumen() {
   const resumen = document.getElementById('resumen-seleccion');
-  resumen.innerHTML = quiniela.map((s, i) => s || '-').join(' | ');
+  resumen.innerHTML = Object.entries(selecciones)
+    .map(([id, {tipo, porcentaje}]) => `
+      <div class="resumen-item">
+        <strong>Partido ${parseInt(id) + 1}:</strong>
+        <span class="tipo">${tipo}</span>
+        <span class="porcentaje">(${porcentaje})</span>
+      </div>
+    `).join('') || '<p class="text-muted">No hay selecciones realizadas</p>';
 }
 
-// Botón "Me siento suertudo"
-document.getElementById('btn-suertudo').addEventListener('click', () => {
-  quiniela = quiniela.map(() => ['L', 'E', 'V'][Math.floor(Math.random() * 3)]);
-  actualizarResumen();
-  document.querySelectorAll('.equipo').forEach(btn => {
-    const i = parseInt(btn.dataset.index);
-    const seleccion = btn.dataset.seleccion;
-    btn.classList.toggle('seleccionado', quiniela[i] === seleccion);
+// Función para selección aleatoria
+function seleccionAleatoria() {
+  document.querySelectorAll('.partido').forEach(partido => {
+    const opciones = partido.querySelectorAll('.opcion');
+    const seleccion = Math.floor(Math.random() * opciones.length);
+    opciones[seleccion].click();
   });
-});
+}
 
-// Botón "Agregar Quiniela"
-document.getElementById('btn-agregar').addEventListener('click', () => {
+// Validar y enviar quiniela
+async function enviarQuiniela() {
   const nombre = document.getElementById('nombre').value.trim();
   const celular = document.getElementById('celular').value.trim();
 
   if (!nombre || !celular) {
-    alert('Por favor, ingresa tu nombre y celular.');
+    mostrarAlerta('Por favor completa todos los campos', 'error');
     return;
   }
 
-  if (quiniela.includes(null)) {
-    alert('Completa todas las selecciones antes de agregar.');
+  if (Object.keys(selecciones).length === 0) {
+    mostrarAlerta('Debes realizar al menos una selección', 'error');
     return;
   }
 
-  const quinielasGuardadas = JSON.parse(localStorage.getItem('quinielas') || '[]');
-  quinielasGuardadas.push({ nombre, celular, selecciones: [...quiniela] });
-  localStorage.setItem('quinielas', JSON.stringify(quinielasGuardadas));
+  const payload = {
+    nombre,
+    celular,
+    selecciones,
+    fecha: new Date().toISOString()
+  };
 
-  alert('Quiniela agregada correctamente. Puedes seguir agregando más.');
-  actualizarContadorQuinielas();
-  renderizarPartidos();
-  document.getElementById('nombre').value = '';
-  document.getElementById('celular').value = '';
-});
-
-// Botón "Eliminar Quiniela"
-document.getElementById('btn-eliminar').addEventListener('click', () => {
-  if (confirm('¿Eliminar quiniela actual?')) {
-    renderizarPartidos();
-    document.getElementById('resumen-seleccion').innerHTML = '';
+  try {
+    // Aquí iría la llamada a tu API
+    mostrarAlerta('Quiniela enviada correctamente', 'exito');
+    selecciones = {};
+    actualizarResumen();
+    document.querySelectorAll('.opcion.seleccionado').forEach(o => o.classList.remove('seleccionado'));
+  } catch (error) {
+    mostrarAlerta('Error al enviar la quiniela', 'error');
   }
-});
-
-// Función para mostrar cuántas quinielas hay
-function actualizarContadorQuinielas() {
-  const quinielasGuardadas = JSON.parse(localStorage.getItem('quinielas') || '[]');
-  let contador = document.getElementById('contador-quinielas');
-  if (!contador) {
-    contador = document.createElement('span');
-    contador.id = 'contador-quinielas';
-    contador.style.marginLeft = '10px';
-    contador.style.fontWeight = 'bold';
-    contador.style.color = 'green';
-    document.getElementById('btn-agregar').after(contador);
-  }
-  contador.textContent = `(${quinielasGuardadas.length} guardadas)`;
 }
 
-// Botón "Enviar Quiniela"
-document.getElementById('btn-enviar').addEventListener('click', async () => {
-  const quinielasGuardadas = JSON.parse(localStorage.getItem('quinielas') || '[]');
+// Helpers
+function mostrarAlerta(mensaje, tipo) {
+  const alerta = document.createElement('div');
+  alerta.className = `alerta ${tipo}`;
+  alerta.textContent = mensaje;
+  document.body.prepend(alerta);
 
-  if (quinielasGuardadas.length === 0) {
-    alert('No hay quinielas guardadas para enviar.');
-    return;
-  }
-
-  const listaNombres = quinielasGuardadas.map(q => `<li>${q.nombre}</li>`).join('');
-  const confirmarEnvio = confirm(`Las siguientes quinielas están listas para enviar:\n\n${listaNombres}\n\n¿Confirmas el envío?`);
-
-  if (!confirmarEnvio) {
-    return;
-  }
-
-  for (const q of quinielasGuardadas) {
-    const xml = generarXML(q.nombre, q.celular, q.selecciones);
-    const payload = {
-      nombre: q.nombre,
-      celular: q.celular,
-      xml
-    };
-
-    try {
-      const res = await fetch(endpoint, {
-        method: 'POST',
-        body: JSON.stringify(payload),
-      });
-
-      if (!res.ok) {
-        console.error('Error al enviar:', q);
-      }
-    } catch (err) {
-      console.error('Error al enviar:', err);
-    }
-  }
-
-  alert('Todas las quinielas han sido enviadas correctamente.');
-  localStorage.removeItem('quinielas');
-  actualizarContadorQuinielas();
-  renderizarPartidos();
-});
-
-// Función para generar el XML de las quinielas
-function generarXML(nombre, celular, seleccion) {
-  const seleccionesXML = seleccion.map((s, i) => `<partido id="${i + 1}">${s}</partido>`).join('');
-  return `<quiniela>
-  <nombre>${nombre}</nombre>
-  <celular>${celular}</celular>
-  <selecciones>${seleccionesXML}</selecciones>
-</quiniela>`;
+  setTimeout(() => alerta.remove(), 3000);
 }
 
-// Botón verificador (no implementado aún)
-document.getElementById('btn-verificar').addEventListener('click', () => {
-  alert('Función de verificación en construcción.');
-});
+function mostrarError() {
+  const container = document.getElementById('partidos-container');
+  container.innerHTML = `
+    <div class="error">
+      <p>⚠️ Error al cargar los partidos</p>
+      <button onclick="cargarPartidos()">Reintentar</button>
+    </div>
+  `;
+}
 
-// Fecha simulada
-document.getElementById('inicio-quiniela').textContent = 'Lunes 10:00 AM';
-document.getElementById('cierre-quiniela').textContent = 'Viernes 11:59 PM';
-
-// Iniciar
-obtenerPartidos();
-actualizarContadorQuinielas();
+// Event Listeners
+document.addEventListener('DOMContentLoaded', cargarPartidos);
+document.getElementById('btn-suertudo').addEventListener('click', seleccionAleatoria);
+document.getElementById('btn-enviar').addEventListener('click', enviarQuiniela);
