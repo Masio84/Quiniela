@@ -1,239 +1,260 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Quiniela MX - Pronósticos Semanales</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
-    <style>
-        :root {
-            --color-primario: #2c3e50;
-            --color-secundario: #3498db;
-            --color-exito: #2ecc71;
-            --color-error: #e74c3c;
-        }
-
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
-
-        body {
-            font-family: 'Segoe UI', sans-serif;
-            line-height: 1.6;
-            background: #f8f9fa;
-            color: #333;
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 20px;
-        }
-
-        header {
-            background: var(--color-primario);
-            color: white;
-            padding: 2rem;
-            border-radius: 15px;
-            margin-bottom: 2rem;
-            text-align: center;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-        }
-
-        .partido {
-            background: white;
-            border-radius: 12px;
-            padding: 1.5rem;
-            margin-bottom: 1.5rem;
-            display: grid;
-            grid-template-columns: 1fr auto 1fr;
-            gap: 1.5rem;
-            align-items: center;
-            position: relative;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-        }
-
-        .equipo {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            text-align: center;
-        }
-
-        .equipo img {
-            width: 80px;
-            height: 80px;
-            object-fit: contain;
-            margin-bottom: 0.5rem;
-        }
-
-        .opciones {
-            display: flex;
-            flex-direction: column;
-            gap: 0.75rem;
-            min-width: 120px;
-        }
-
-        .opcion {
-            padding: 0.8rem;
-            border: 2px solid var(--color-secundario);
-            border-radius: 8px;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            position: relative;
-            background: white;
-        }
-
-        .opcion:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 3px 6px rgba(52, 152, 219, 0.2);
-        }
-
-        .opcion.seleccionado {
-            background: var(--color-exito);
-            border-color: #27ae60;
-            color: white;
-        }
-
-        .porcentaje {
-            height: 4px;
-            background: rgba(52, 152, 219, 0.2);
-            margin-top: 0.5rem;
-            border-radius: 2px;
-        }
-
-        .info-adicional {
-            grid-column: 1 / -1;
-            display: flex;
-            justify-content: space-between;
-            font-size: 0.9em;
-            color: #666;
-            padding-top: 1rem;
-            margin-top: 1rem;
-            border-top: 1px solid #eee;
-        }
-
-        .tv {
-            background: var(--color-error);
-            color: white;
-            padding: 0.2rem 0.5rem;
-            border-radius: 3px;
-        }
-
-        #resumen-seleccion {
-            background: white;
-            padding: 1.5rem;
-            border-radius: 12px;
-            margin: 2rem 0;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-        }
-
-        .resumen-item {
-            display: flex;
-            gap: 1rem;
-            align-items: center;
-            padding: 0.5rem 0;
-            border-bottom: 1px solid #eee;
-        }
-
-        .botones {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-            gap: 1rem;
-            margin: 2rem 0;
-        }
-
-        button {
-            padding: 1rem;
-            border: none;
-            border-radius: 8px;
-            background: var(--color-secundario);
-            color: white;
-            font-weight: bold;
-            cursor: pointer;
-            transition: all 0.2s ease;
-        }
-
-        button:hover {
-            opacity: 0.9;
-            transform: translateY(-1px);
-        }
-
-        .datos-participante {
-            display: grid;
-            gap: 1rem;
-            margin: 2rem 0;
-        }
-
-        input {
-            padding: 1rem;
-            border: 2px solid #ddd;
-            border-radius: 8px;
-            font-size: 1rem;
-        }
-
-        .alerta {
-            position: fixed;
-            top: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            padding: 1rem 2rem;
-            border-radius: 8px;
-            color: white;
-            font-weight: bold;
-            z-index: 1000;
-        }
-
-        .alerta.error { background: var(--color-error); }
-        .alerta.exito { background: var(--color-exito); }
-
-        @media (max-width: 768px) {
-            .partido {
-                grid-template-columns: 1fr;
-                text-align: center;
-            }
-            
-            .opciones {
-                flex-direction: row;
-                justify-content: center;
-            }
-            
-            .equipo img {
-                width: 60px;
-                height: 60px;
-            }
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Liga de Profetas</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    .match-row { display: flex; align-items: center; justify-content: space-between; padding: 10px; border-bottom: 1px solid #e5e7eb; }
+    .team { display: flex; align-items: center; gap: 8px; }
+    .team img { width: 30px; height: 30px; }
+    .radio-group { display: flex; gap: 20px; }
+    .radio-group label { display: flex; align-items: center; gap: 5px; }
+    .header { background-color: #10b981; color: white; padding: 10px; text-align: center; }
+    .button { background-color: #10b981; color: white; padding: 10px 20px; border-radius: 5px; cursor: pointer; }
+    .button:hover { background-color: #059669; }
+    .odds { display: flex; gap: 20px; justify-content: center; font-size: 0.9rem; color: #666; margin-top: 5px; }
+  </style>
 </head>
-<body>
-    <header>
-        <h1>⚽ Quiniela Oficial Liga MX</h1>
-        <p>🗓️ Jornada: <span id="inicio-quiniela">--</span> al <span id="cierre-quiniela">--</span></p>
-    </header>
+<body class="bg-gray-100 font-sans">
+  <!-- Página Principal -->
+  <div id="main-page" class="max-w-4xl mx-auto p-4">
+    <div class="header">
+      <h1 class="text-2xl font-bold">LIGA DE PROFETAS</h1>
+      <p class="text-lg">MEDIA SEMANA, JORNADA 16</p>
+      <p>INICIA: MARTES 15 AL MIÉRCOLES 16 DE ABRIL 18:00 HRS.</p>
+      <p>CIERRE: MIÉRCOLES 16 A LAS 08:00 HRS.</p>
+    </div>
 
-    <main>
-        <section id="partidos-container">
-            <div class="cargando">Cargando partidos...</div>
-        </section>
+    <div id="matches" class="mt-4 bg-white rounded-lg shadow p-4">
+      <!-- Los partidos se insertarán aquí dinámicamente -->
+    </div>
 
-        <section class="resumen">
-            <h2>📋 Tu Pronóstico</h2>
-            <div id="resumen-seleccion"></div>
-        </section>
+    <div class="mt-4 flex justify-between items-center">
+      <div>
+        <p class="text-xl font-bold text-green-600">PREMIO ANTERIOR $25310</p>
+        <p class="text-lg font-semibold text-red-600">COSTO: $10.00 PESOS</p>
+      </div>
+    </div>
 
-        <section class="datos-participante">
-            <input type="text" placeholder="Nombre completo" id="nombre" required>
-            <input type="tel" placeholder="Teléfono (10 dígitos)" id="celular" pattern="[0-9]{10}" required>
-        </section>
+    <div class="mt-4">
+      <p class="font-semibold">TUTORIAL:</p>
+      <ul class="list-decimal list-inside text-sm">
+        <li>Selecciona los equipos que creas que ganarán.</li>
+        <li>Coloca tu nombre.</li>
+        <li>Presiona el botón agregar quiniela.</li>
+        <li>Sí ya terminaste, selecciona el botón enviar quiniela.</li>
+      </ul>
+    </div>
 
-        <div class="botones">
-            <button id="btn-suertudo">🎲 Selección Aleatoria</button>
-            <button id="btn-enviar">✅ Enviar Pronóstico</button>
-        </div>
-    </main>
+    <div class="mt-4 flex gap-4">
+      <input id="user-name" type="text" placeholder="Ingresa tu Nombre" class="border p-2 rounded-lg w-1/2">
+      <input id="user-phone" type="text" placeholder="Ingresa tu Número de Celular" class="border p-2 rounded-lg w-1/2">
+    </div>
 
-    <script>
-        // Código JavaScript completo proporcionado anteriormente
-        // (El mismo código JS que te envié en la respuesta anterior)
-    </script>
+    <div class="mt-4 flex gap-4 justify-center">
+      <button class="button">ACTIVAR DOBLES Y TRIPLES</button>
+      <button class="button" onclick="addQuiniela()">AGREGAR QUINIELA</button>
+      <button class="button" onclick="submitQuiniela()">ENVIAR QUINIELA</button>
+      <button class="button">VERIFICADOR</button>
+    </div>
+
+    <div class="mt-4 text-center">
+      <button class="text-blue-600 underline" onclick="showAdminPage()">Ir a la página de administración</button>
+    </div>
+  </div>
+
+  <!-- Página de Administración -->
+  <div id="admin-page" class="max-w-4xl mx-auto p-4 hidden">
+    <div class="header">
+      <h1 class="text-2xl font-bold">Administración - Liga de Profetas</h1>
+    </div>
+
+    <div class="mt-4 bg-white rounded-lg shadow p-4">
+      <h2 class="text-lg font-semibold">Lista de Participantes</h2>
+      <table class="w-full mt-2 border-collapse">
+        <thead>
+          <tr class="bg-gray-200">
+            <th class="border p-2">Nombre</th>
+            <th class="border p-2">Teléfono</th>
+            <th class="border p-2">Estado de Pago</th>
+            <th class="border p-2">Acción</th>
+          </tr>
+        </thead>
+        <tbody id="participants-table">
+          <!-- Los participantes se insertarán aquí dinámicamente -->
+        </tbody>
+      </table>
+    </div>
+
+    <div class="mt-4 text-center">
+      <button class="text-blue-600 underline" onclick="showMainPage()">Volver a la página principal</button>
+    </div>
+  </div>
+
+  <script>
+    let participants = [];
+    let selections = [];
+
+    // Obtener y analizar el CSV (Archivo: LigaMX.csv)
+    async function fetchMatches() {
+      const csvUrl = 'https://raw.githubusercontent.com/Masio84/Quiniela/main/LigaMX.csv';
+
+      try {
+        console.log('Intentando cargar el CSV desde:', csvUrl);
+        const response = await fetch(csvUrl, {
+          method: 'GET'
+        });
+
+        if (!response.ok) {
+          throw new Error(`Error HTTP! Estado: ${response.status} - ${response.statusText}`);
+        }
+
+        const text = await response.text();
+        console.log('Contenido del CSV:', text);
+
+        // Dividir el texto en filas y limpiar líneas vacías
+        const rows = text.split('\n')
+          .map(row => row.trim())
+          .filter(row => row.length > 0)
+          .map(row => row.split('\t')); // Usando tabulación como delimitador
+
+        console.log('Filas parseadas:', rows);
+
+        // La primera fila son los encabezados
+        const headers = rows[0];
+        console.log('Encabezados:', headers);
+
+        // Filas de datos (excluyendo encabezados)
+        const matches = rows.slice(1).filter(row => row.length >= 8); // Asegurarse de que cada fila tenga al menos 8 columnas
+        console.log('Partidos filtrados:', matches);
+
+        if (matches.length === 0) {
+          throw new Error('No se encontraron partidos válidos en el CSV.');
+        }
+
+        // Mostrar partidos
+        const matchesContainer = document.getElementById('matches');
+        matchesContainer.innerHTML = ''; // Limpiar contenido previo
+
+        matches.forEach((match, index) => {
+          console.log(`Procesando partido ${index + 1}:`, match);
+          const matchDiv = document.createElement('div');
+          matchDiv.className = 'match-row';
+          matchDiv.innerHTML = `
+            <div class="team">
+              <img src="${match[2]}" alt="Logo Equipo Local" /> <!-- local src -->
+              <span>${match[2].split('/').pop().split('.')[0]}</span> <!-- Extraer nombre del equipo desde la URL -->
+            </div>
+            <div class="radio-group">
+              <label><input type="radio" name="match-${index}" value="local" onchange="updateSelection(${index}, 'local')"> Local</label>
+              <label><input type="radio" name="match-${index}" value="empate" onchange="updateSelection(${index}, 'empate')"> Empate</label>
+              <label><input type="radio" name="match-${index}" value="visita" onchange="updateSelection(${index}, 'visita')"> Visita</label>
+            </div>
+            <div class="team">
+              <img src="${match[3]}" alt="Logo Equipo Visitante" /> <!-- visit src -->
+              <span>${match[3].split('/').pop().split('.')[0]}</span> <!-- Extraer nombre del equipo desde la URL -->
+            </div>
+          `;
+
+          // Agregar fecha, hora, televisora y porcentajes de apuestas
+          const detailsDiv = document.createElement('div');
+          detailsDiv.className = 'text-sm text-gray-600 mt-2';
+          detailsDiv.innerHTML = `
+            <p>Fecha: ${match[0]} | Hora: ${match[1]} | Televisora: ${match[4]}</p>
+            <div class="odds">
+              <span>Local: ${match[5]}</span>
+              <span>Empate: ${match[6]}</span>
+              <span>Visita: ${match[7]}</span>
+            </div>
+          `;
+          matchDiv.appendChild(detailsDiv);
+
+          matchesContainer.appendChild(matchDiv);
+        });
+      } catch (error) {
+        console.error('Error al obtener LigaMX.csv:', error.message);
+        document.getElementById('matches').innerHTML = `
+          <p>Error al cargar los partidos: ${error.message}. <br>
+          Por favor, verifica que el archivo LigaMX.csv esté correctamente hospedado y accesible.<br>
+          Si estás probando localmente, asegúrate de usar un servidor local como 'live-server'.</p>
+        `;
+      }
+    }
+
+    // Actualizar selecciones del usuario
+    function updateSelection(matchIndex, result) {
+      selections[matchIndex] = result;
+    }
+
+    // Agregar Quiniela (guardar datos del usuario)
+    function addQuiniela() {
+      const name = document.getElementById('user-name').value;
+      const phone = document.getElementById('user-phone').value;
+      if (!name || !phone) {
+        alert('Por favor, ingresa tu nombre y número de celular.');
+        return;
+      }
+      participants.push({ name, phone, paid: false });
+      alert('Quiniela agregada. Ahora puedes enviarla.');
+    }
+
+    // Enviar Quiniela
+    function submitQuiniela() {
+      const name = document.getElementById('user-name').value;
+      const phone = document.getElementById('user-phone').value;
+      if (!name || !phone) {
+        alert('Por favor, ingresa tu nombre y número de celular.');
+        return;
+      }
+      if (selections.length === 0) {
+        alert('Por favor, selecciona al menos un resultado.');
+        return;
+      }
+      alert('Quiniela enviada con éxito.');
+      updateParticipantsTable();
+    }
+
+    // Actualizar tabla de participantes en la página de administración
+    function updateParticipantsTable() {
+      const tableBody = document.getElementById('participants-table');
+      tableBody.innerHTML = '';
+      participants.forEach((participant, index) => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+          <td class="border p-2">${participant.name}</td>
+          <td class="border p-2">${participant.phone}</td>
+          <td class="border p-2">${participant.paid ? 'Pagado' : 'Pendiente'}</td>
+          <td class="border p-2">
+            ${!participant.paid ? `<button class="button" onclick="confirmPayment(${index})">Confirmar Pago</button>` : ''}
+          </td>
+        `;
+        tableBody.appendChild(row);
+      });
+    }
+
+    // Confirmar pago
+    function confirmPayment(index) {
+      participants[index].paid = true;
+      updateParticipantsTable();
+    }
+
+    // Mostrar página de administración
+    function showAdminPage() {
+      document.getElementById('main-page').classList.add('hidden');
+      document.getElementById('admin-page').classList.remove('hidden');
+      updateParticipantsTable();
+    }
+
+    // Mostrar página principal
+    function showMainPage() {
+      document.getElementById('admin-page').classList.add('hidden');
+      document.getElementById('main-page').classList.remove('hidden');
+    }
+
+    // Cargar partidos al iniciar la página
+    window.onload = fetchMatches;
+  </script>
 </body>
 </html>
