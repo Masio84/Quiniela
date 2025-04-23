@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Liga de Profetas</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #0a1a2f;
+      color: #fff;
+      margin: 0;
+      padding: 20px;
+    }
+
+    h1 {
+      text-align: center;
+      color: gold;
+    }
+
+    .match {
+      border: 2px solid #ccc;
+      border-radius: 10px;
+      margin-bottom: 15px;
+      padding: 10px;
+      text-align: center;
+      background-color: #12243d;
+    }
+
+    .logos {
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+
+    .logos img {
+      width: 64px;
+      height: 64px;
+    }
+
+    .datetime {
+      font-size: 0.9em;
+      color: silver;
+      margin-bottom: 10px;
+    }
+
+    .buttons {
+      display: flex;
+      justify-content: space-around;
+      margin-bottom: 10px;
+    }
+
+    .buttons button {
+      background-color: #1c2f4d;
+      border: 2px solid gold;
+      color: gold;
+      padding: 8px 14px;
+      border-radius: 5px;
+      cursor: pointer;
+      font-weight: bold;
+      width: 30%;
+    }
+
+    .buttons button.selected {
+      background-color: gold;
+      color: #0a1a2f;
+    }
+
+    #quiniela-preview {
+      text-align: center;
+      margin-top: 20px;
+      font-size: 1.2em;
+    }
+
+    #form-section {
+      margin-top: 30px;
+      text-align: center;
+    }
+
+    input {
+      padding: 8px;
+      margin: 5px;
+      border-radius: 5px;
+      border: none;
+      width: 80%;
+      max-width: 300px;
+    }
+
+    .control-buttons {
+      margin-top: 15px;
+    }
+
+    .control-buttons button {
+      background-color: silver;
+      border: none;
+      color: #0a1a2f;
+      font-weight: bold;
+      padding: 10px 20px;
+      margin: 5px;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    #saved-quinielas {
+      margin-top: 20px;
+      background: #101f35;
+      padding: 10px;
+      border-radius: 10px;
+    }
+
+    #saved-quinielas h3 {
+      color: gold;
+    }
+  </style>
+</head>
+<body>
+  <h1>Liga de Profetas</h1>
+  <div id="matches-container"></div>
+
+  <div id="quiniela-preview">Tu quiniela: <span id="preview-result">-</span></div>
+
+  <div id="form-section">
+    <input type="text" id="nombre" placeholder="Nombre completo" />
+    <input type="tel" id="celular" placeholder="Celular" />
+    <div class="control-buttons">
+      <button onclick="guardarQuiniela()">Guardar Quiniela</button>
+      <button onclick="enviarQuinielas()">Enviar Quiniela(s)</button>
+    </div>
+  </div>
+
+  <div id="saved-quinielas">
+    <h3>Quinielas Guardadas:</h3>
+    <ul id="lista-quinielas"></ul>
+  </div>
+
+  <script>
+    const matchesContainer = document.getElementById("matches-container");
+    const preview = document.getElementById("preview-result");
+    const listaQuinielas = document.getElementById("lista-quinielas");
+
+    let seleccionActual = [];
+    let quinielasGuardadas = [];
+
+    fetch('ligamx.json')
+      .then(res => res.json())
+      .then(data => {
+        data.forEach((partido, index) => {
+          const div = document.createElement("div");
+          div.className = "match";
+          div.innerHTML = `
+            <div class="logos">
+              <img src="${partido['local src']}" alt="local" />
+              <img src="${partido['visit src']}" alt="visitante" />
+            </div>
+            <div class="datetime">${partido.date} | ${partido.hour}</div>
+            <div class="buttons" data-index="${index}">
+              <button onclick="seleccionar(${index}, 'L', this)">Local</button>
+              <button onclick="seleccionar(${index}, 'E', this)">Empate</button>
+              <button onclick="seleccionar(${index}, 'V', this)">Visita</button>
+            </div>
+          `;
+          matchesContainer.appendChild(div);
+          seleccionActual.push(null);
+        });
+      });
+
+    function seleccionar(index, opcion, boton) {
+      seleccionActual[index] = opcion;
+      const buttons = boton.parentNode.querySelectorAll("button");
+      buttons.forEach(btn => btn.classList.remove("selected"));
+      boton.classList.add("selected");
+      actualizarPreview();
+    }
+
+    function actualizarPreview() {
+      preview.textContent = seleccionActual.map(x => x || "-").join("");
+    }
+
+    function guardarQuiniela() {
+      const nombre = document.getElementById("nombre").value.trim();
+      const celular = document.getElementById("celular").value.trim();
+      if (!nombre || !celular || seleccionActual.includes(null)) {
+        alert("Completa todos los campos y la quiniela antes de guardar.");
+        return;
+      }
+
+      const folio = (quinielasGuardadas.length + 1).toString().padStart(4, "0");
+
+      const nueva = {
+        folio,
+        nombre,
+        celular,
+        resultado: [...seleccionActual]
+      };
+
+      quinielasGuardadas.push(nueva);
+
+      const li = document.createElement("li");
+      li.textContent = `#${folio} - ${nueva.resultado.join("")}`;
+      listaQuinielas.appendChild(li);
+
+      // Reiniciar para nueva quiniela
+      seleccionActual = seleccionActual.map(() => null);
+      document.getElementById("nombre").value = "";
+      document.getElementById("celular").value = "";
+      document.querySelectorAll(".selected").forEach(btn => btn.classList.remove("selected"));
+      actualizarPreview();
+    }
+
+    function enviarQuiniela() {
+      if (quinielasGuardadas.length === 0) {
+        alert("No hay quinielas guardadas para enviar.");
+        return;
+      }
+
+      fetch('https://script.google.com/macros/s/AKfycbxwJVnZiKoQ34zXf05fwmqDSVr1SRfCyWpFly-sAqhTBY9XKDjUgIiWZEZLYJ77e3Tx/exec', {
+        method: 'POST',
+        body: JSON.stringify(quinielasGuardadas),
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      })
+      .then(res => res.text())
+      .then(msg => {
+        alert("¡Quinielas enviadas exitosamente!");
+        quinielasGuardadas = [];
+        listaQuinielas.innerHTML = "";
+      })
+      .catch(err => {
+        alert("Hubo un error al enviar las quinielas.");
+        console.error(err);
+      });
+    }
+  </script>
+</body>
+</html>
